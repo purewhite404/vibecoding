@@ -101,7 +101,7 @@
             // ローカル環境とRender環境でURLを切り替える例
             const WS_BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                                  ? 'ws://localhost:8080/ws' // ローカル開発用
-                                 : 'wss://vibecoding-g4d4.onrender.com//ws'; // Renderデプロイ後のGoバックエンドのURL
+                                 : 'wss://vibecoding-g4d4.onrender.com/ws'; // Renderデプロイ後のGoバックエンドのURL
 
             ws = new WebSocket(WS_BACKEND_URL);
 
