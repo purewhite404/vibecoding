@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"sync" // 複数のクライアントを安全に扱うためのsyncパッケージ
+
 	"github.com/gorilla/websocket"
 )
 
@@ -15,16 +16,30 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// すべてのオリジンからの接続を許可（開発用）
-		// 本番では特定のオリジンをホワイトリスト化することを検討してください
-		return true
+		// !!! ここを適切に設定する !!!
+		// フロントエンドのURLを明示的に許可する必要があります。
+		// 例えば、ローカル開発なら "http://localhost:3000"
+		// Renderデプロイ後なら "https://your-frontend-url.onrender.com"
+		// 本番では複数のオリジンを許可する場合はループなどでチェック
+		allowedOrigins := map[string]bool{
+			"http://localhost:3000": true, // フロントエンドの開発サーバーのURL
+			"http://127.0.0.1:3000": true, // またはこれ
+			// Renderデプロイ後のフロントエンドURLも追加
+			"https://vibecoding-g4d4.onrender.com": true, // Renderデプロイ後の実際のURLに置き換え
+		}
+		origin := r.Header.Get("Origin")
+		if _, ok := allowedOrigins[origin]; ok {
+			return true
+		}
+		log.Printf("Blocked origin: %s", origin)
+		return false
 	},
 }
 
 // ClientManagerは接続されたWebSocketクライアントを管理します。
 type ClientManager struct {
-	clients map[*websocket.Conn]bool // 接続されているクライアントのマップ
-	sync.RWMutex                     // マップへの同時アクセスを保護するためのMutex
+	clients      map[*websocket.Conn]bool // 接続されているクライアントのマップ
+	sync.RWMutex                          // マップへの同時アクセスを保護するためのMutex
 }
 
 // NewClientManagerは新しいClientManagerを作成します。
@@ -35,7 +50,7 @@ func NewClientManager() *ClientManager {
 }
 
 // AddClientは新しいクライアントを追加します。
-func func (cm *ClientManager) AddClient(conn *websocket.Conn) {
+func (cm *ClientManager) AddClient(conn *websocket.Conn) {
 	cm.Lock()
 	defer cm.Unlock()
 	cm.clients[conn] = true
@@ -55,7 +70,7 @@ func (cm *ClientManager) RemoveClient(conn *websocket.Conn) {
 
 // BroadcastMessageは接続されているすべてのクライアントにメッセージをブロードキャストします。
 func (cm *ClientManager) BroadcastMessage(message []byte) {
-	cm.RLock() // 読み込みロック
+	cm.RLock()         // 読み込みロック
 	defer cm.RUnlock() // deferでロック解除
 	for client := range cm.clients {
 		err := client.WriteMessage(websocket.TextMessage, message)
@@ -106,10 +121,6 @@ func main() {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		websocketHandler(w, r, manager)
 	})
-
-	// 静的ファイル（フロントエンド）を配信するためのファイルサーバー
-	// current directory (./) をWebサーバーのルートとして公開
-	http.Handle("/", http.FileServer(http.Dir("./public")))
 
 	// ポートを設定（Renderの環境変数PORTを優先）
 	port := os.Getenv("PORT")
