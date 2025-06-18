@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>シンプルシューティングゲーム</title>
+<style>
+  body {
+    background: #000;
+    color: #fff;
+    text-align: center;
+    font-family: sans-serif;
+  }
+  canvas {
+    background: #111;
+    display: block;
+    margin: 20px auto;
+    border: 2px solid #fff;
+  }
+</style>
+</head>
+<body>
+<h1>シンプルシューティングゲーム</h1>
+<canvas id="game" width="400" height="600"></canvas>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+const player = {
+  x: canvas.width / 2 - 15,
+  y: canvas.height - 40,
+  width: 30,
+  height: 30,
+  speed: 5,
+  movingLeft: false,
+  movingRight: false
+};
+
+const bullets = [];
+const enemies = [];
+let score = 0;
+let gameOver = false;
+
+function createEnemy() {
+  const size = 30;
+  const x = Math.random() * (canvas.width - size);
+  enemies.push({ x, y: -size, width: size, height: size, speed: 2 + Math.random() * 1.5 });
+}
+
+function update() {
+  if (gameOver) return;
+
+  // プレイヤー移動
+  if (player.movingLeft && player.x > 0) player.x -= player.speed;
+  if (player.movingRight && player.x + player.width < canvas.width) player.x += player.speed;
+
+  // 弾の移動
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    bullets[i].y -= 7;
+    if (bullets[i].y + bullets[i].height < 0) bullets.splice(i, 1);
+  }
+
+  // 敵の移動
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    enemies[i].y += enemies[i].speed;
+    if (enemies[i].y > canvas.height) enemies.splice(i, 1);
+  }
+
+  // 弾と敵の当たり判定
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    for (let j = bullets.length - 1; j >= 0; j--) {
+      if (rectsIntersect(enemies[i], bullets[j])) {
+        enemies.splice(i, 1);
+        bullets.splice(j, 1);
+        score += 10;
+        break;
+      }
+    }
+  }
+
+  // 敵とプレイヤーの当たり判定
+  for (let enemy of enemies) {
+    if (rectsIntersect(enemy, player)) {
+      gameOver = true;
+    }
+  }
+}
+
+function rectsIntersect(a, b) {
+  return !(
+    a.x > b.x + b.width ||
+    a.x + a.width < b.x ||
+    a.y > b.y + b.height ||
+    a.y + a.height < b.y
+  );
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // プレイヤー
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+
+  // 弾
+  ctx.fillStyle = 'yellow';
+  for (let b of bullets) {
+    ctx.fillRect(b.x, b.y, b.width, b.height);
+  }
+
+  // 敵
+  ctx.fillStyle = 'red';
+  for (let e of enemies) {
+    ctx.fillRect(e.x, e.y, e.width, e.height);
+  }
+
+  // スコア表示
+  ctx.fillStyle = 'white';
+  ctx.font = '20px sans-serif';
+  ctx.fillText('Score: ' + score, 10, 30);
+
+  if (gameOver) {
+    ctx.fillStyle = 'white';
+    ctx.font = '40px sans-serif';
+    ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
+  }
+}
+
+function gameLoop() {
+  update();
+  draw();
+  if (!gameOver) requestAnimationFrame(gameLoop);
+}
+
+// 敵を一定間隔で出す
+setInterval(() => {
+  if (!gameOver) createEnemy();
+}, 1000);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') player.movingLeft = true;
+  if (e.key === 'ArrowRight') player.movingRight = true;
+  if (e.key === ' ' && !gameOver) {
+    bullets.push({
+      x: player.x + player.width / 2 - 5,
+      y: player.y,
+      width: 10,
+      height: 20
+    });
+  }
+});
+
+document.addEventListener('keyup', e => {
+  if (e.key === 'ArrowLeft') player.movingLeft = false;
+  if (e.key === 'ArrowRight') player.movingRight = false;
+});
+
+gameLoop();
+</script>
+</body>
+</html>
+

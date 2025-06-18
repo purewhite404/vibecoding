@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>将棋盤 - 動ける場所ハイライト</title>
+<style>
+  body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+  }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(9, 50px);
+    grid-template-rows: repeat(9, 50px);
+    gap: 1px;
+    background: #333;
+  }
+  .cell {
+    width: 50px;
+    height: 50px;
+    background: #f0d9b5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+  }
+  .cell.black {
+    background: #b58863;
+  }
+  .highlight {
+    background: #aaffaa !important;
+  }
+  .piece {
+    pointer-events: none;
+    user-select: none;
+    transition: transform 0.2s;
+  }
+</style>
+</head>
+<body>
+
+<div id="board"></div>
+
+<script>
+// 駒のUnicode（将棋用文字）
+const pieceUnicode = {
+  'K': '王',
+  'R': '飛',
+  'B': '角',
+  'G': '金',
+  'S': '銀',
+  'N': '桂',
+  'L': '香',
+  'P': '歩'
+};
+
+// 盤面 9x9 配列
+const board = Array(9).fill(null).map(() => Array(9).fill(null));
+
+// 後手（black）側初期配置
+board[0] = [
+  {type:'L', owner:'black'}, {type:'N', owner:'black'}, {type:'S', owner:'black'},
+  {type:'G', owner:'black'}, {type:'K', owner:'black'}, {type:'G', owner:'black'},
+  {type:'S', owner:'black'}, {type:'N', owner:'black'}, {type:'L', owner:'black'}
+];
+board[1][1] = {type:'R', owner:'black'};
+board[1][7] = {type:'B', owner:'black'};
+for(let i=0; i<9; i++) board[2][i] = {type:'P', owner:'black'};
+
+// 先手（white）側初期配置
+board[8] = [
+  {type:'L', owner:'white'}, {type:'N', owner:'white'}, {type:'S', owner:'white'},
+  {type:'G', owner:'white'}, {type:'K', owner:'white'}, {type:'G', owner:'white'},
+  {type:'S', owner:'white'}, {type:'N', owner:'white'}, {type:'L', owner:'white'}
+];
+board[7][7] = {type:'R', owner:'white'};
+board[7][1] = {type:'B', owner:'white'};
+for(let i=0; i<9; i++) board[6][i] = {type:'P', owner:'white'};
+
+const boardEl = document.getElementById('board');
+let selectedCell = null;
+
+// 駒ごとの動ける方向パターン（後手基準、先手はdy反転）
+const movePatterns = {
+  'P': [[0, 1]], // 歩
+  'K': [ // 王
+    [-1,-1], [0,-1], [1,-1],
+    [-1, 0],         [1, 0],
+    [-1, 1], [0, 1], [1, 1]
+  ],
+  'G': [ // 金
+    [-1,-1], [0,-1], [1,-1],
+    [-1, 0],         [1, 0],
+             [0, 1]
+  ],
+  'S': [ // 銀
+    [-1,-1], [0,-1], [1,-1],
+             [0, 1],
+    [-1, 1],          [1, 1]
+  ]
+  // 他の駒も追加できます
+};
+
+function renderBoard() {
+  boardEl.innerHTML = '';
+  for(let y=0; y<9; y++) {
+    for(let x=0; x<9; x++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.dataset.x = x;
+      cell.dataset.y = y;
+
+      const piece = board[y][x];
+      if(piece) {
+        const p = document.createElement('div');
+        p.classList.add('piece');
+        p.textContent = pieceUnicode[piece.type];
+        p.style.color = piece.owner === 'black' ? 'black' : 'red';
+        if(piece.owner === 'white') {
+          p.style.transform = 'rotate(180deg)';
+        }
+        cell.appendChild(p);
+      }
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+boardEl.addEventListener('click', e => {
+  const cell = e.target.closest('.cell');
+  if(!cell) return;
+  const x = +cell.dataset.x;
+  const y = +cell.dataset.y;
+  const piece = board[y][x];
+
+  clearHighlights();
+
+  if(piece) {
+    selectedCell = {x, y};
+    highlightMoves(piece, x, y);
+  } else {
+    selectedCell = null;
+  }
+});
+
+function clearHighlights() {
+  document.querySelectorAll('.highlight').forEach(el => {
+    el.classList.remove('highlight');
+  });
+}
+
+function highlightMoves(piece, x, y) {
+  const patterns = movePatterns[piece.type];
+  if(!patterns) return;
+
+  // 先手（white）はdy方向を反転
+  const dir = piece.owner === 'black' ? 1 : -1;
+
+  for(const [dx, dy] of patterns) {
+    const nx = x + dx;
+    const ny = y + dy * dir;
+    if(nx >= 0 && nx < 9 && ny >= 0 && ny < 9) {
+      const target = board[ny][nx];
+      // 移動先が空か相手の駒ならハイライト
+      if(target === null || target.owner !== piece.owner) {
+        highlightCell(nx, ny);
+      }
+    }
+  }
+}
+
+function highlightCell(x, y) {
+  const cells = boardEl.children;
+  for(let cell of cells) {
+    if(+cell.dataset.x === x && +cell.dataset.y === y) {
+      cell.classList.add('highlight');
+      break;
+    }
+  }
+}
+
+renderBoard();
+</script>
+
+</body>
+</html>
+
