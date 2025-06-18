@@ -25,7 +25,7 @@ var upgrader = websocket.Upgrader{
 			"http://localhost:3000": true, // フロントエンドの開発サーバーのURL
 			"http://127.0.0.1:3000": true, // またはこれ
 			// Renderデプロイ後のフロントエンドURLも追加
-			"https://vibecoding-g4d4.onrender.com": true, // Renderデプロイ後の実際のURLに置き換え
+			"https://jr2hao.dev": true, // Renderデプロイ後の実際のURLに置き換え
 		}
 		origin := r.Header.Get("Origin")
 		if _, ok := allowedOrigins[origin]; ok {
