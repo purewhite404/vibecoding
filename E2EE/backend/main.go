@@ -1,23 +1,125 @@
 package main
 
 import (
-    "fmt"
-    "log"
-    "net/http"
-    "os"
+	"log"
+	"net/http"
+	"os"
+	"sync" // 複数のクライアントを安全に扱うためのsyncパッケージ
+	"github.com/gorilla/websocket"
 )
 
+// UpgraderはHTTP接続をWebSocket接続にアップグレードするために使用されます。
+// 以下の設定はセキュリティのためにオリジンチェックを無効にしていますが、
+// 本番環境では特定のオリジンのみを許可する設定を推奨します。
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		// すべてのオリジンからの接続を許可（開発用）
+		// 本番では特定のオリジンをホワイトリスト化することを検討してください
+		return true
+	},
+}
+
+// ClientManagerは接続されたWebSocketクライアントを管理します。
+type ClientManager struct {
+	clients map[*websocket.Conn]bool // 接続されているクライアントのマップ
+	sync.RWMutex                     // マップへの同時アクセスを保護するためのMutex
+}
+
+// NewClientManagerは新しいClientManagerを作成します。
+func NewClientManager() *ClientManager {
+	return &ClientManager{
+		clients: make(map[*websocket.Conn]bool),
+	}
+}
+
+// AddClientは新しいクライアントを追加します。
+func func (cm *ClientManager) AddClient(conn *websocket.Conn) {
+	cm.Lock()
+	defer cm.Unlock()
+	cm.clients[conn] = true
+	log.Printf("Client connected: %s. Total clients: %d", conn.RemoteAddr(), len(cm.clients))
+}
+
+// RemoveClientはクライアントを削除します。
+func (cm *ClientManager) RemoveClient(conn *websocket.Conn) {
+	cm.Lock()
+	defer cm.Unlock()
+	if _, ok := cm.clients[conn]; ok {
+		delete(cm.clients, conn)
+		conn.Close() // 接続をクローズ
+		log.Printf("Client disconnected: %s. Total clients: %d", conn.RemoteAddr(), len(cm.clients))
+	}
+}
+
+// BroadcastMessageは接続されているすべてのクライアントにメッセージをブロードキャストします。
+func (cm *ClientManager) BroadcastMessage(message []byte) {
+	cm.RLock() // 読み込みロック
+	defer cm.RUnlock() // deferでロック解除
+	for client := range cm.clients {
+		err := client.WriteMessage(websocket.TextMessage, message)
+		if err != nil {
+			log.Printf("Error writing to client %s: %v", client.RemoteAddr(), err)
+			cm.RemoveClient(client) // エラーが発生したクライアントは削除
+		}
+	}
+}
+
+// websocketHandlerはWebSocket接続を処理します。
+func websocketHandler(w http.ResponseWriter, r *http.Request, cm *ClientManager) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer func() {
+		cm.RemoveClient(conn) // 接続が終了したら削除
+	}()
+
+	cm.AddClient(conn) // 新しいクライアントを追加
+
+	// メッセージを読み込み、ブロードキャストするループ
+	for {
+		messageType, message, err := conn.ReadMessage()
+		if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
+				log.Printf("Client %s closed connection gracefully.", conn.RemoteAddr())
+			} else {
+				log.Printf("Error reading message from client %s: %v", conn.RemoteAddr(), err)
+			}
+			break // エラーが発生したらループを抜ける
+		}
+		log.Printf("Received message from %s (type %d): %s", conn.RemoteAddr(), messageType, message)
+
+		// 受信したメッセージを接続されているすべてのクライアントにブロードキャスト
+		cm.BroadcastMessage(message)
+	}
+}
+
 func main() {
-    // Renderが提供するPORT環境変数を使用するか、デフォルトで8080を使用
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080"
-    }
+	// クライアントマネージャーを初期化
+	manager := NewClientManager()
 
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "Hello from Go Backend on Render! Port: %s", port)
-    })
+	// WebSocketハンドラを設定
+	// クロージャを使ってmanagerをハンドラに渡す
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		websocketHandler(w, r, manager)
+	})
 
-    log.Printf("Server listening on :%s", port)
-    log.Fatal(http.ListenAndServe(":"+port, nil))
+	// 静的ファイル（フロントエンド）を配信するためのファイルサーバー
+	// current directory (./) をWebサーバーのルートとして公開
+	http.Handle("/", http.FileServer(http.Dir("./public")))
+
+	// ポートを設定（Renderの環境変数PORTを優先）
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // ローカル開発用のデフォルトポート
+	}
+
+	log.Printf("Server starting on :%s", port)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
