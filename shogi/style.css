@@ -1,0 +1,42 @@
+#shogi-board {
+    display: grid;
+    grid-template-columns: repeat(9, 60px); /* 9列 */
+    grid-template-rows: repeat(9, 60px);    /* 9行 */
+    width: 540px; /* 9 * 60px */
+    height: 540px; /* 9 * 60px */
+    border: 1px solid #333;
+    margin: 20px auto;
+    background-color: #f0d9b5; /* 将棋盤の色 */
+}
+
+.square {
+    width: 60px;
+    height: 60px;
+    border: 1px solid #999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.piece {
+    cursor: grab;
+    transform-origin: center;
+}
+
+/* 駒の向きを表現するために、後手の駒を回転させる */
+.piece.gote {
+    transform: rotate(180deg);
+}
+
+.komadai {
+    width: 540px;
+    margin: 10px auto;
+    border: 1px solid #333;
+    min-height: 50px;
+    padding: 10px;
+    background-color: #eee;
+}
