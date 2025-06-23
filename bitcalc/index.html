@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>論理演算カリキュレータ (多進数対応・修正版)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 650px;
+            width: 100%;
+            margin: 2rem;
+            padding: 1.5rem 2rem;
+            background-color: #ffffff;
+            border: 1px solid #dcdcdc;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a1a1a;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group, .options, .operations, .result {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-family: 'Menlo', 'Consolas', monospace;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+
+        .options {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .operations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .operations button {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 6px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .operations button:hover {
+            background-color: #0056b3;
+        }
+        
+        .operations button:active {
+            transform: scale(0.98);
+        }
+
+        #not-btn {
+            background-color: #fd7e14;
+        }
+        #not-btn:hover {
+            background-color: #d36306;
+        }
+
+        .result {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .result h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .result p {
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
+            word-wrap: break-word;
+        }
+
+        .result strong {
+            display: inline-block;
+            width: 80px;
+            color: #555;
+        }
+
+        .result span {
+            font-family: 'Menlo', 'Consolas', monospace;
+            font-weight: bold;
+            color: #0056b3;
+        }
+        
+        #error-message {
+            color: #dc3545;
+            font-weight: bold;
+            min-height: 1.2em;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>論理演算カリキュレータ</h1>
+
+        <div class="input-group">
+            <div class="input-row">
+                <label for="input1">入力 1:</label>
+                <input type="text" id="input1" placeholder="値を入力">
+            </div>
+            <div class="input-row" style="margin-top: 1rem;">
+                <label for="input2">入力 2:</label>
+                <input type="text" id="input2" placeholder="値を入力">
+            </div>
+        </div>
+
+        <div class="options">
+            <label for="base-selector">入力形式:</label>
+            <select id="base-selector">
+                <option value="2">2進数 (Binary)</option>
+                <option value="10">10進数 (Decimal)</option>
+                <option value="16" selected>16進数 (Hexadecimal)</option>
+            </select>
+        </div>
+
+        <div class="operations">
+            <button id="and-btn">AND</button>
+            <button id="or-btn">OR</button>
+            <button id="xor-btn">XOR</button>
+            <button id="not-btn">NOT (入力1)</button>
+        </div>
+
+        <div class="result">
+            <h2>結果</h2>
+            <p><strong>10進数:</strong> <span id="result-dec"></span></p>
+            <p><strong>2進数:</strong> <span id="result-bin"></span></p>
+            <p><strong>16進数:</strong> <span id="result-hex"></span></p>
+        </div>
+        <p id="error-message"></p>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const input1 = document.getElementById('input1');
+            const input2 = document.getElementById('input2');
+            const baseSelector = document.getElementById('base-selector');
+            const resultDec = document.getElementById('result-dec');
+            const resultBin = document.getElementById('result-bin');
+            const resultHex = document.getElementById('result-hex');
+            const errorMessage = document.getElementById('error-message');
+
+            let currentBase = 16;
+
+            // --- イベントリスナー ---
+            baseSelector.addEventListener('change', handleBaseChange);
+            document.getElementById('and-btn').addEventListener('click', () => calculate('AND'));
+            document.getElementById('or-btn').addEventListener('click', () => calculate('OR'));
+            document.getElementById('xor-btn').addEventListener('click', () => calculate('XOR'));
+            document.getElementById('not-btn').addEventListener('click', () => calculate('NOT'));
+            
+            // --- 機能関数 ---
+
+            function calculate(operation) {
+                clearResults();
+                
+                const base = parseInt(baseSelector.value, 10);
+                const val1Str = input1.value.trim();
+                const val2Str = input2.value.trim();
+
+                if (!validateInputs(operation, val1Str, val2Str)) return;
+
+                try {
+                    const num1 = parseToBigInt(val1Str, base);
+                    let result, bitLength;
+
+                    if (operation === 'NOT') {
+                        bitLength = getDisplayBitLength(val1Str, base, num1);
+                        const mask = (BigInt(1) << BigInt(bitLength)) - BigInt(1);
+                        result = num1 ^ mask;
+                    } else {
+                        const num2 = parseToBigInt(val2Str, base);
+                        const bitLength1 = getDisplayBitLength(val1Str, base, num1);
+                        const bitLength2 = getDisplayBitLength(val2Str, base, num2);
+                        bitLength = Math.max(bitLength1, bitLength2);
+
+                        switch (operation) {
+                            case 'AND': result = num1 & num2; break;
+                            case 'OR':  result = num1 | num2; break;
+                            case 'XOR': result = num1 ^ num2; break;
+                        }
+                    }
+                    displayResults(result, bitLength);
+
+                } catch (e) {
+                    errorMessage.textContent = e.message;
+                }
+            }
+            
+            function handleBaseChange() {
+                const newBase = parseInt(baseSelector.value, 10);
+                errorMessage.textContent = '';
+
+                convertInputValue(input1, currentBase, newBase);
+                convertInputValue(input2, currentBase, newBase);
+                
+                currentBase = newBase;
+            }
+
+            function convertInputValue(inputElement, fromBase, toBase) {
+                const valueStr = inputElement.value.trim();
+                if (valueStr === '') return;
+
+                try {
+                    const number = parseToBigInt(valueStr, fromBase);
+                    inputElement.value = number.toString(toBase).toUpperCase();
+                } catch (e) {
+                    errorMessage.textContent = `エラー: 「${valueStr}」を新しい形式に変換できませんでした。`;
+                }
+            }
+
+            // --- ヘルパー関数 ---
+
+            function validateInputs(operation, v1, v2) {
+                if (operation !== 'NOT' && (v1 === '' || v2 === '')) {
+                    errorMessage.textContent = 'エラー: AND, OR, XOR演算には入力1と入力2の両方が必要です。';
+                    return false;
+                }
+                if (operation === 'NOT' && v1 === '') {
+                    errorMessage.textContent = 'エラー: NOT演算には入力1が必要です。';
+                    return false;
+                }
+                return true;
+            }
+
+            function parseToBigInt(str, base) {
+                const patterns = {
+                    2: /^[01]+$/,
+                    10: /^[0-9]+$/,
+                    16: /^[0-9a-f]+$/i
+                };
+                if (!patterns[base].test(str)) {
+                    throw new Error(`エラー: 入力値「${str}」は有効な${base}進数の形式ではありません。`);
+                }
+
+                try {
+                    if (base === 10) {
+                        return BigInt(str);
+                    } else if (base === 2) {
+                        return BigInt('0b' + str);
+                    } else { // base === 16
+                        return BigInt('0x' + str);
+                    }
+                } catch (e) {
+                     throw new Error(`エラー: 「${str}」を数値に変換中に問題が発生しました。`);
+                }
+            }
+
+            function getDisplayBitLength(str, base, numberAsBigInt) {
+                if (str === '0') return 1;
+                // 10進数の場合は、値が収まる最小ビット長を計算
+                if (base === 10) {
+                    return numberAsBigInt.toString(2).length;
+                }
+                // 2進数と16進数は、先頭の0を考慮して文字列長から計算
+                return base === 2 ? str.length : str.length * 4;
+            }
+            
+            function displayResults(result, bitLength) {
+                resultDec.textContent = result.toString(10);
+                
+                const binStr = result.toString(2).padStart(bitLength, '0');
+                resultBin.textContent = formatBinary(binStr);
+                
+                const hexStr = result.toString(16).toUpperCase();
+                const hexLength = Math.ceil(bitLength / 4);
+                resultHex.textContent = '0x' + hexStr.padStart(hexLength, '0');
+            }
+
+            function clearResults() {
+                resultDec.textContent = '-';
+                resultBin.textContent = '-';
+                resultHex.textContent = '-';
+                errorMessage.textContent = '';
+            }
+
+            function formatBinary(binStr) {
+                let reversedStr = binStr.split('').reverse().join('');
+                let formatted = reversedStr.match(/.{1,4}/g).join(' ');
+                return formatted.split('').reverse().join('');
+            }
+        });
+    </script>
+</body>
+</html>
