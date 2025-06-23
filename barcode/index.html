@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リアルタイム・複数バーコードジェネレーター</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>リアルタイム・複数バーコードジェネレーター</h1>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="barcodeData">データ (例: 123456789012)</label>
+                <input type="text" id="barcodeData" placeholder="バーコードにしたいデータを入力">
+            </div>
+
+            <div class="input-group">
+                <label for="barcodeType">バーコードの種類:</label>
+                <select id="barcodeType">
+                    <option value="EAN13">EAN13</option>
+                    <option value="CODE128">CODE128</option>
+                    <option value="CODE39">CODE39</option>
+                    <option value="ITF14">ITF14</option>
+                    <option value="MSI">MSI</option>
+                    <option value="Pharmacode">Pharmacode</option>
+                </select>
+            </div>
+
+            <button id="addBarcodeButton">バーコードを追加</button>
+        </div>
+
+        <p id="errorMessage" class="error-message"></p>
+
+        <div class="barcode-list-container">
+            <h2>生成済みバーコード一覧</h2>
+            <div id="barcodeList" class="barcode-list">
+                <p id="noBarcodesMessage" class="info-message">ここに生成されたバーコードが表示されます。</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* 上部に配置 */
+    min-height: 100vh;
+    background-color: #f0f2f5;
+    margin: 20px 0; /* 上下のマージンを追加 */
+    color: #333;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 35px;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 90%;
+    max-width: 600px; /* 少し広げる */
+}
+
+h1 {
+    color: #007bff;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+}
+
+.input-section {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 25px;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.input-group input[type="text"],
+.input-group select {
+    width: calc(100% - 20px);
+    padding: 12px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-top: 15px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.error-message {
+    color: #dc3545;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.info-message {
+    color: #6c757d;
+    font-style: italic;
+    margin-top: 10px;
+}
+
+.barcode-list-container {
+    margin-top: 30px;
+}
+
+.barcode-list-container h2 {
+    text-align: left;
+    color: #007bff;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.barcode-list {
+    display: flex;
+    flex-wrap: wrap; /* 折り返しを許可 */
+    gap: 20px; /* バーコード間のスペース */
+    justify-content: center; /* 中央寄せ */
+    min-height: 100px;
+    padding: 10px;
+    border: 1px dashed #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.barcode-item {
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    position: relative;
+    padding-top: 35px; /* 削除ボタンのスペースを確保 */
+}
+
+.barcode-item svg {
+    max-width: 180px; /* 各バーコードの最大幅 */
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.barcode-item p {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 10px;
+    word-break: break-all; /* 長いデータでも折り返す */
+}
+
+.remove-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    font-size: 1.2em;
+    line-height: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.remove-button:hover {
+    background-color: #c82333;
+}
