@@ -1,0 +1,255 @@
+body {
+    font-family: sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+}
+
+.container {
+    max-width: 1500px; /* 全体の幅を広げる */
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    gap: 20px; /* 要素間の隙間 */
+    flex-wrap: wrap; /* 画面幅が狭い場合に折り返す */
+}
+
+/* 入力セクション全体をまとめるための新しいラッパー */
+.input-form-wrapper {
+    flex: 1; /* 利用可能なスペースを均等に分配 */
+    min-width: 480px; /* 最小幅を設定 */
+    display: flex; /* 内部のinput-sectionを縦に並べるためにflexboxを使用 */
+    gap: 20px; /* input-section間の隙間 */
+}
+
+.input-section {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-width: 480px;
+}
+
+.preview-section {
+    flex: 1; /* 利用可能なスペースを均等に分配 */
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9; /* プレビューセクションの背景色 */
+}
+
+/* その他のスタイルは変更なし */
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box; /* パディングとボーダーを幅に含める */
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 5px; /* ボタンの上の余白を調整 */
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.education-entry, .work-experience-entry { /* 学歴・職歴のエントリのスタイル */
+    border: 1px solid #eee;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.education-entry:last-of-type, .work-experience-entry:last-of-type {
+    margin-bottom: 0;
+}
+
+.option-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+#add-intern-motivation {
+    margin-right: 10px;
+}
+
+#intern-motivation-container {
+    margin-top: 10px;
+    padding-left: 20px;
+    border-left: 2px solid #007bff;
+}
+
+/* 削除ボタンのスタイル */
+.remove-education, .remove-work-experience {
+    background-color: #dc3545;
+    margin-top: 10px;
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+.remove-education:hover, .remove-work-experience:hover {
+    background-color: #c82333;
+}
+
+/* プレビューセクションの基本的なスタイル */
+#resume-preview {
+    font-size: 10.5px; /* ここは後で調整 */
+    line-height: 1.6;
+    color: #333;
+    padding: 20mm 15mm; /* 上下20mm、左右15mmの余白 */
+    box-sizing: border-box; /* パディングを幅に含める */
+    width: 210mm; /* A4用紙の幅に合わせる（左右の余白を含めて） */
+    min-height: 297mm; /* A4用紙の高さに合わせる（上下の余白を含めて） */
+    margin: 0 auto; /* 中央寄せ */
+}
+
+/* 各セクションの区切り */
+.preview-section-item {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #ddd; /* 点線で区切る */
+}
+
+.preview-section-item:last-of-type {
+    border-bottom: none; /* 最後のセクションは区切り線なし */
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* プレビューの見出し */
+.preview-heading {
+    font-size: 16px;
+    color: #007bff;
+    border-left: 4px solid #007bff;
+    padding-left: 10px;
+    margin-bottom: 10px;
+}
+
+/* 個人情報 */
+#resume-preview p {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+#resume-preview p strong {
+    min-width: 80px; /* ラベルの幅を揃える */
+    display: inline-block;
+}
+
+/* 学歴・職歴の項目 */
+#preview-education div, #preview-work-experience div { /* 後で職歴も追加する想定 */
+    font-size: 14px;
+    margin-bottom: 3px;
+    padding-left: 10px;
+    border-left: 2px solid #eee;
+}
+
+#preview-education p, #preview-work-experience p {
+    margin-bottom: 5px;
+}
+
+/* スキル、自己PR、志望理由、インターンで学びたいこと */
+#preview-skills p,
+#preview-self-pr p,
+#preview-motivation p,
+#preview-intern-motivation p {
+    white-space: pre-wrap; /* 改行を保持 */
+    background-color: #fcfcfc;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid #eee;
+}
+
+/* 個人情報セクションのグリッドレイアウト */
+.personal-info-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* 左側が広く、右側が狭い2カラム */
+    gap: 20px; /* カラム間の隙間 */
+    align-items: start; /* 上端を揃える */
+}
+
+.personal-info-fields {
+    /* 特にスタイルは不要ですが、必要に応じて追加 */
+}
+
+.photo-upload-area {
+    text-align: center;
+}
+
+.photo-preview-container {
+    width: 120px; /* プレビュー画像の最大幅 */
+    height: 160px; /* プレビュー画像の最大高さ（一般的な履歴書の比率） */
+    border: 1px dashed #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* はみ出た画像を隠す */
+    margin: 10px auto 0;
+    background-color: #f0f0f0;
+}
+
+.photo-preview-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* 画像全体を表示 */
+}
+
+#no-photo-text {
+    font-size: 12px;
+    color: #888;
+}
+
+/* プレビューセクションでの顔写真レイアウト */
+.personal-info-with-photo {
+    display: flex; /* flexboxで横並びにする */
+    justify-content: space-between; /* 左右に最大に広げる */
+    align-items: flex-start; /* 上端に揃える */
+}
+
+.personal-info-details {
+    flex-grow: 1; /* 個人情報詳細が利用可能なスペースを占める */
+}
+
+.preview-photo-area {
+    height: 180px;
+    border: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-left: 20px; /* 個人情報との間に余白 */
+    flex-shrink: 0; /* 縮小させない */
+}
+
+.preview-photo-area img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* 画像全体を表示 */
+    display: block; /* 余白をなくす */
+}
+
+/* プレビューのセクションの見出しの調整（写真と並べるため） */
+.personal-info-details .preview-heading {
+    margin-top: 0; /* 上の余白をなくす */
+}

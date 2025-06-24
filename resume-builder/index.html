@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanilla JS 履歴書作成アプリ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>履歴書作成アプリ</h1>
+        <div class="input-form-wrapper">
+            <div class="input-section">
+                <h2>個人情報</h2>
+                <div class="personal-info-grid"> <div class="personal-info-fields">
+                    <label for="name">氏名:</label>
+                    <input type="text" id="name" placeholder="山田 太郎">
+
+                    <label for="email">メールアドレス:</label>
+                    <input type="email" id="email" placeholder="taro.yamada@example.com">
+
+                    <label for="phone">電話番号:</label>
+                    <input type="tel" id="phone" placeholder="090-1234-5678">
+
+                    <label for="address">住所:</label>
+                    <input type="text" id="address" placeholder="東京都新宿区西新宿1-1-1">
+                </div>
+                <div class="photo-upload-area"> <label for="photo-upload">顔写真:</label>
+                    <input type="file" id="photo-upload" accept="image/*">
+                    <div class="photo-preview-container">
+                        <img id="preview-photo" src="" alt="顔写真プレビュー" style="display:none;">
+                        <p id="no-photo-text">ここに写真が表示されます</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <h2>学歴</h2>
+                <div id="education-entries">
+                    <div class="education-entry">
+                        <label for="education-school-0">学校名:</label>
+                        <input type="text" class="education-school" id="education-school-0" placeholder="〇〇大学">
+                        <label for="education-degree-0">学部・学科:</label>
+                        <input type="text" class="education-degree" id="education-degree-0" placeholder="△△学部□□学科">
+                        <label for="education-period-0">在学期間:</label>
+                        <input type="text" class="education-period" id="education-period-0" placeholder="20XX年4月 - 20YY年3月">
+                    </div>
+                </div>
+                <button type="button" id="add-education">学歴を追加</button>
+            </div>
+
+            <div class="input-section">
+                <h2>スキル</h2>
+                <label for="skills">スキル:</label>
+                <textarea id="skills" rows="4" placeholder="JavaScript, HTML, CSS, React, Figmaなど"></textarea>
+            </div>
+
+            <div class="input-section">
+                <h2>自己PR・志望理由</h2>
+                <label for="self-pr">自己PR:</label>
+                <textarea id="self-pr" rows="6" placeholder="これまでの経験や強み、貢献できることなどを具体的に記入してください。"></textarea>
+
+                <label for="motivation">志望理由:</label>
+                <textarea id="motivation" rows="6" placeholder="なぜこの企業や職種を志望するのか、具体的な理由を記入してください。"></textarea>
+
+                <div class="option-section">
+                    <input type="checkbox" id="add-intern-motivation">
+                    <label for="add-intern-motivation">インターンで学びたいことを追加する</label>
+                    <div id="intern-motivation-container" style="display: none;">
+                        <label for="intern-motivation">インターンで学びたいこと:</label>
+                        <textarea id="intern-motivation" rows="4" placeholder="インターンシップを通じて具体的に何を学びたいか、どんな経験を積みたいかを記入してください。"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <button id="download-pdf">PDFダウンロード</button>
+            <button id="download-html">HTMLダウンロード</button>
+        </div>
+        
+        <div class="preview-section">
+            <h2>履歴書プレビュー</h2>
+            <div id="resume-preview">
+                <section class="preview-section-item personal-info-with-photo">
+                    <div class="personal-info-details">
+                        <h3 class="preview-heading">個人情報</h3>
+                        <p><strong>氏名:</strong> <span id="preview-name"></span></p>
+                        <p><strong>メール:</strong> <span id="preview-email"></span></p>
+                        <p><strong>電話番号:</strong> <span id="preview-phone"></span></p>
+                        <p><strong>住所:</strong> <span id="preview-address"></span></p>
+                    </div>
+                    <div class="preview-photo-area">
+                        <img id="final-preview-photo" src="" alt="顔写真" style="display:none;">
+                    </div>
+                </section>
+
+                <section class="preview-section-item">
+                    <h3 class="preview-heading">学歴</h3>
+                    <div id="preview-education"></div>
+                </section>
+
+                <section class="preview-section-item">
+                    <h3 class="preview-heading">スキル</h3>
+                    <div id="preview-skills"></div>
+                </section>
+
+                <section class="preview-section-item">
+                    <h3 class="preview-heading">自己PR</h3>
+                    <div id="preview-self-pr"></div>
+                </section>
+
+                <section class="preview-section-item">
+                    <h3 class="preview-heading">志望理由</h3>
+                    <div id="preview-motivation"></div>
+                </section>
+
+                <section class="preview-section-item">
+                    <h3 class="preview-heading">インターンで学びたいこと</h3>
+                    <div id="preview-intern-motivation"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
