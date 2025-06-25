@@ -16,6 +16,9 @@
                     <label for="name">氏名:</label>
                     <input type="text" id="name" placeholder="山田 太郎">
 
+                    <label for="birthdate">生年月日:</label>
+                    <input type="date" id="birthdate">
+
                     <label for="email">メールアドレス:</label>
                     <input type="email" id="email" placeholder="taro.yamada@example.com">
 
@@ -63,6 +66,9 @@
                 <label for="motivation">志望理由:</label>
                 <textarea id="motivation" rows="6" placeholder="なぜこの企業や職種を志望するのか、具体的な理由を記入してください。"></textarea>
 
+                <label for="current-research">現在の研究テーマ:</label> <textarea id="current-research" rows="4" placeholder="現在取り組んでいる研究テーマについて記入してください。"></textarea> <label for="motivation">志望理由:</label>
+                <textarea id="motivation" rows="6" placeholder="なぜこの企業や職種を志望するのか、具体的な理由を記入してください。"></textarea>
+
                 <div class="option-section">
                     <input type="checkbox" id="add-intern-motivation">
                     <label for="add-intern-motivation">インターンで学びたいことを追加する</label>
@@ -84,6 +90,7 @@
                     <div class="personal-info-details">
                         <h3 class="preview-heading">個人情報</h3>
                         <p><strong>氏名:</strong> <span id="preview-name"></span></p>
+                        <p><strong>生年月日:</strong> <span id="preview-birthdate"></span></p>
                         <p><strong>メール:</strong> <span id="preview-email"></span></p>
                         <p><strong>電話番号:</strong> <span id="preview-phone"></span></p>
                         <p><strong>住所:</strong> <span id="preview-address"></span></p>
@@ -106,6 +113,11 @@
                 <section class="preview-section-item">
                     <h3 class="preview-heading">自己PR</h3>
                     <div id="preview-self-pr"></div>
+                </section>
+
+                <section class="preview-section-item">
+                    <h3 class="preview-heading">現在の研究テーマ</h3>
+                    <div id="preview-current-research"></div>
                 </section>
 
                 <section class="preview-section-item">

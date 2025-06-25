@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const addEducationButton = document.getElementById('add-education');
     const nameInput = document.getElementById('name');
+    const birthdateInput = document.getElementById('birthdate');
     const emailInput = document.getElementById('email');
-    const educationEntries = document.getElementById('education-entries');    
-    // 新しい要素の取得
+    const educationEntries = document.getElementById('education-entries');
     const phoneInput = document.getElementById('phone');
     const addressInput = document.getElementById('address');
     const skillsInput = document.getElementById('skills');
@@ -12,15 +12,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const addInternMotivationCheckbox = document.getElementById('add-intern-motivation');
     const internMotivationContainer = document.getElementById('intern-motivation-container');
     const internMotivationInput = document.getElementById('intern-motivation');
+    const currentResearchInput = document.getElementById('current-research');
 
     // プレビュー要素の取得
     const previewName = document.getElementById('preview-name');
+    const previewBirthdate = document.getElementById('preview-birthdate');
     const previewEmail = document.getElementById('preview-email');
     const previewPhone = document.getElementById('preview-phone');
     const previewAddress = document.getElementById('preview-address');
     const previewEducation = document.getElementById('preview-education');
     const previewSkills = document.getElementById('preview-skills');
     const previewSelfPr = document.getElementById('preview-self-pr');
+    const previewCurrentResearch = document.getElementById('preview-current-research');
     const previewMotivation = document.getElementById('preview-motivation');
     const previewInternMotivation = document.getElementById('preview-intern-motivation');
 
@@ -37,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const selfPrSection = previewSelfPr.closest('.preview-section-item');
     const motivationSection = previewMotivation.closest('.preview-section-item');
     const internMotivationSection = previewInternMotivation.closest('.preview-section-item');
+    const currentResearchSection = previewCurrentResearch.closest('.preview-section-item');
 
     // PDFダウンロード機能
     const downloadPdfButton = document.getElementById('download-pdf');
@@ -60,7 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         newEducationEntry.querySelector('.remove-education').addEventListener('click', (event) => {
             event.target.closest('.education-entry').remove();
-            updatePreview(); // プレビューを更新
+            updatePreview();
+            saveData();
         });
 
         // 新しく追加された入力フィールドにもイベントリスナーを設定
@@ -70,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         educationCount++;
         updatePreview(); // 新しいフィールドが追加されたらプレビューを更新
+        saveData();
     });
 
     downloadPdfButton.addEventListener('click', async () => { // asyncを追加
@@ -231,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noPhotoText.style.display = 'none'; // テキストを非表示に
 
                 updatePreview(); // 画像が変更されたらプレビューを更新
+                saveData();
             };
             reader.readAsDataURL(file); // ファイルをData URLとして読み込む
         } else {
@@ -240,14 +247,145 @@ document.addEventListener('DOMContentLoaded', () => {
             previewPhotoImg.style.display = 'none';
             finalPreviewPhotoImg.style.display = 'none';
             noPhotoText.style.display = 'block'; // テキストを表示
-            updatePreview(); // プレビューを更新
+            updatePreview();
+            saveData();
         }
     });
+
+    // データの保存（Save Data）
+    const saveData = () => {
+        const data = {
+            name: document.getElementById('name').value,
+            birthdate: document.getElementById('birthdate').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            skills: document.getElementById('skills').value,
+            selfPr: document.getElementById('self-pr').value,
+            currentResearch: document.getElementById('current-research').value, // 追加
+            motivation: document.getElementById('motivation').value,
+            addInternMotivationChecked: document.getElementById('add-intern-motivation').checked,
+            internMotivation: document.getElementById('intern-motivation').value,
+            
+            // 学歴のデータを取得
+            education: [],
+            // .education-entry クラスを持つ各 div をループ
+            // ここで input 要素を直接取得しているため、id を使わずに class で取得
+            // 削除された要素は含まれない
+            ...Array.from(document.querySelectorAll('.education-entry')).map(entry => ({
+                school: entry.querySelector('.education-school').value,
+                degree: entry.querySelector('.education-degree').value,
+                period: entry.querySelector('.education-period').value
+            }))
+        };
+        localStorage.setItem('resumeData', JSON.stringify(data));
+        console.log('データを保存しました。');
+    };
+
+    // データの読み込み（Load Data）
+    const loadData = () => {
+        const savedData = localStorage.getItem('resumeData');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            document.getElementById('name').value = data.name || '';
+            document.getElementById('birthdate').value = data.birthdate || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('phone').value = data.phone || '';
+            document.getElementById('address').value = data.address || '';
+            document.getElementById('skills').value = data.skills || '';
+            document.getElementById('self-pr').value = data.selfPr || '';
+            document.getElementById('current-research').value = data.currentResearch || ''; // 追加
+            document.getElementById('motivation').value = data.motivation || '';
+            document.getElementById('add-intern-motivation').checked = data.addInternMotivationChecked || false;
+            document.getElementById('intern-motivation').value = data.internMotivation || '';
+
+            // 学歴データの読み込み
+            // 既存の学歴エントリーをクリア
+            const educationEntriesContainer = document.getElementById('education-entries');
+            educationEntriesContainer.innerHTML = '';
+            // 保存されたデータに基づいて学歴エントリーを再構築
+            if (data.education && data.education.length > 0) {
+                data.education.forEach((edu, index) => {
+                    const newEducationEntry = document.createElement('div');
+                    newEducationEntry.classList.add('education-entry');
+                    newEducationEntry.innerHTML = `
+                        <label for="education-school-${index}">学校名:</label>
+                        <input type="text" class="education-school" id="education-school-${index}" placeholder="〇〇大学" value="${edu.school || ''}">
+                        <label for="education-degree-${index}">学部・学科:</label>
+                        <input type="text" class="education-degree" id="education-degree-${index}" placeholder="△△学部□□学科" value="${edu.degree || ''}">
+                        <label for="education-period-${index}">在学期間:</label>
+                        <input type="text" class="education-period" id="education-period-${index}" placeholder="20XX年4月 - 20YY年3月" value="${edu.period || ''}">
+                        <button type="button" class="remove-education">削除</button>
+                    `;
+                    educationEntriesContainer.appendChild(newEducationEntry);
+
+                    // 新しく追加された要素にもイベントリスナーを設定
+                    newEducationEntry.querySelector('.remove-education').addEventListener('click', (event) => {
+                        event.target.closest('.education-entry').remove();
+                        updatePreview();
+                        saveData(); // データ削除時も保存
+                    });
+                    newEducationEntry.querySelectorAll('input').forEach(input => {
+                        input.addEventListener('input', () => {
+                            updatePreview();
+                            saveData(); // データ変更時も保存
+                        });
+                    });
+                });
+                // educationCount の更新 (最後のインデックス + 1)
+                educationCount = data.education.length;
+            } else {
+                // 保存された学歴がない場合は、初期の空の学歴エントリーを1つ追加
+                const initialEducationEntry = document.createElement('div');
+                initialEducationEntry.classList.add('education-entry');
+                initialEducationEntry.innerHTML = `
+                    <label for="education-school-0">学校名:</label>
+                    <input type="text" class="education-school" id="education-school-0" placeholder="〇〇大学">
+                    <label for="education-degree-0">学部・学科:</label>
+                    <input type="text" class="education-degree" id="education-degree-0" placeholder="△△学部□□学科">
+                    <label for="education-period-0">在学期間:</label>
+                    <input type="text" class="education-period" id="education-period-0" placeholder="20XX年4月 - 20YY年3月">
+                `;
+                educationEntriesContainer.appendChild(initialEducationEntry);
+                initialEducationEntry.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('input', () => {
+                        updatePreview();
+                        saveData();
+                    });
+                });
+                educationCount = 1; // 初期状態に戻す
+            }
+
+            // 顔写真のデータはFileReaderで読み込むため、srcは保存しない。
+            // しかし、ファイルが選択されていた状態は維持できないため、再アップロードが必要。
+            // （ローカルファイルパスはセキュリティ上の理由でブラウザが取得できないため）
+            // アップロードされていない場合はプレビュー非表示
+            if (document.getElementById('photo-upload').files.length === 0) {
+                 document.getElementById('preview-photo').style.display = 'none';
+                 document.getElementById('final-preview-photo').style.display = 'none';
+                 document.getElementById('no-photo-text').style.display = 'block';
+            } else {
+                 document.getElementById('no-photo-text').style.display = 'none';
+            }
+
+            console.log('データを読み込みました。');
+        } else {
+            console.log('保存されたデータがありません。');
+            // データがない場合も、初期の学歴エントリーにイベントリスナーを設定
+            document.querySelectorAll('.education-entry input').forEach(input => {
+                input.addEventListener('input', () => {
+                    updatePreview();
+                    saveData();
+                });
+            });
+        }
+    };
 
     // 全ての入力フィールドの変更を監視し、プレビューを更新する関数
     function updatePreview() {
         // 個人情報
         previewName.textContent = nameInput.value;
+        previewBirthdate.textContent = birthdateInput.value;
         previewEmail.textContent = emailInput.value;
         previewPhone.textContent = phoneInput.value;
         previewAddress.textContent = addressInput.value;
@@ -271,6 +409,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // 自己PR
         previewSelfPr.innerHTML = `<p>${selfPrInput.value.replace(/\n/g, '<br>')}</p>`;
 
+        // 現在の研究テーマ
+        previewCurrentResearch.innerHTML = `<p>${currentResearchInput.value.replace(/\n/g, '<br>')}</p>`;
+
         // 志望理由
         previewMotivation.innerHTML = `<p>${motivationInput.value.replace(/\n/g, '<br>')}</p>`;
 
@@ -288,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 個人情報セクション全体をコントロールしている .personal-info-with-photo があるので、
         // その中の画像要素の表示を制御すれば十分です。
         // 個人情報が何も入力されていなくても写真がある場合は表示したいので、別途チェックします。
-        const hasPersonalInfo = nameInput.value || emailInput.value || phoneInput.value || addressInput.value;
+        const hasPersonalInfo = nameInput.value || birthdateInput.value || emailInput.value || phoneInput.value || addressInput.value;
         const hasPhoto = photoUploadInput.files.length > 0;
 
         personalInfoSection.style.display = (hasPersonalInfo || hasPhoto) ? 'flex' : 'none'; // flexに設定
@@ -304,6 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
         educationSection.style.display = educationHtml ? 'block' : 'none';
         skillsSection.style.display = skillsInput.value ? 'block' : 'none';
         selfPrSection.style.display = selfPrInput.value ? 'block' : 'none';
+        currentResearchSection.style.display = currentResearchInput.value ? 'block' : 'none';
         motivationSection.style.display = motivationInput.value ? 'block' : 'none';
         internMotivationSection.style.display = (addInternMotivationCheckbox.checked && internMotivationInput.value) ? 'block' : 'none';
     }
@@ -317,12 +459,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 全ての入力フィールドにイベントリスナーを設定
     document.querySelectorAll('input:not(#add-intern-motivation), textarea').forEach(input => {
-        input.addEventListener('input', updatePreview);
+        input.addEventListener('input', () => {
+            updatePreview();
+            saveData();
+        });
     });
 
     // チェックボックスの変更も監視
-    addInternMotivationCheckbox.addEventListener('change', updatePreview);
+    addInternMotivationCheckbox.addEventListener('change', () => {
+        updatePreview();
+        saveData(); // チェックボックスの変更時に保存
+    });
 
     // 初期ロード時に全てのプレビューを更新
+    loadData();
     updatePreview();
 });

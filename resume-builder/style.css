@@ -48,6 +48,7 @@ label {
 input[type="text"],
 input[type="email"],
 input[type="tel"],
+input[type="date"],
 textarea {
     width: 100%;
     padding: 8px;
@@ -172,6 +173,7 @@ button:hover {
 /* スキル、自己PR、志望理由、インターンで学びたいこと */
 #preview-skills p,
 #preview-self-pr p,
+#preview-current-research p,
 #preview-motivation p,
 #preview-intern-motivation p {
     white-space: pre-wrap; /* 改行を保持 */
